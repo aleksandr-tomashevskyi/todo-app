@@ -1,6 +1,18 @@
 let express = require("express");
+let {MongoClient } = require("mongodb")
 
 let app = express();
+
+let db;
+
+async function startApp(){
+  let client =  new MongoClient('mongodb+srv://oleksandr_tomashevskyi:Earth156@cluster0.qebg8lq.mongodb.net/TodoApp?retryWrites=true&w=majority');
+  await client.connect();
+  db = client.db();
+  app.listen(3000);
+}
+
+startApp();
 
 app.use(express.urlencoded({extended:false}));
 
@@ -57,8 +69,8 @@ app.get('/', (req, res)=>{
 });
 
 app.post('/create-item', (req, res)=>{
-   console.log(req.body.item);
-   res.send("Thanks for submitting the form")
+   db.collection('items').insertOne({text: req.body.item}, ()=>{
+    res.send("Thanks for submitting the form")
+   })
 })
 
-app.listen(3000);
