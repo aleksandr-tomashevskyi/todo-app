@@ -1,12 +1,14 @@
 let express = require("express");
-let {MongoClient } = require("mongodb")
+let {MongoClient, ObjectId } = require("mongodb")
 
 let app = express();
 
 let db;
 
+app.use(express.static('public'))
+
 async function startApp(){
-  let client =  new MongoClient('mongodb+srv://oleksandr_tomashevskyi:Earth156@cluster0.qebg8lq.mongodb.net/TodoApp?retryWrites=true&w=majority');
+  let client =  new MongoClient('mongodb+srv://oleksandr_tomashevskyi:TitanEaristmould2143@cluster0.qebg8lq.mongodb.net/TodoApp?retryWrites=true&w=majority');
   await client.connect();
   db = client.db();
   app.listen(3000);
@@ -14,6 +16,7 @@ async function startApp(){
 
 startApp();
 
+app.use(express.json())
 app.use(express.urlencoded({extended:false}));
 
 app.get('/', (req, res)=>{
@@ -44,7 +47,7 @@ app.get('/', (req, res)=>{
             return `<li class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
             <span class="item-text">${item.text}</span>
             <div>
-              <button class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
+              <button data-id="${item._id}" class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
               <button class="delete-me btn btn-danger btn-sm">Delete</button>
             </div>
           </li>`
@@ -52,7 +55,8 @@ app.get('/', (req, res)=>{
         </ul>
         
       </div>
-      
+      <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+      <script src="/browser.js"></script>
     </body>
     </html>`);
   })
@@ -64,3 +68,8 @@ app.post('/create-item', (req, res)=>{
    })
 })
 
+app.post('/update-item', (req, res)=>{
+  db.collection('items').findOneAndUpdate({_id: new ObjectId(req.body.id)}, {$set: {text: req.body.text}},()=>{
+    res.send("Success")
+  })
+})
